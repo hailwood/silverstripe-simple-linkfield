@@ -1,0 +1,21 @@
+{
+  "name": "hailwood/silverstripe-simple-linkfield",
+  "description": "Adds a new simple linkfield fieldtype.",
+  "type": "silverstripe-module",
+  "keywords": [
+    "silverstripe",
+    "links",
+    "forms",
+    "fields"
+  ],
+  "license": "GNU",
+  "authors": [
+    {
+      "name": "Matthew Hailwood",
+      "email": "matthew@hailwood.nz"
+    }
+  ],
+  "require": {
+    "silverstripe/framework": "~3.1"
+  }
+}

@@ -1,0 +1,23 @@
+.field.textlink {
+    padding: 0;
+}
+
+.field.textlink select {
+    min-width: 80px;
+}
+
+.field.textlink .fieldgroup-field {
+    padding: 0 8px 0 0;
+}
+
+.field.textlink .fieldgroup-field.last {
+    padding: 0;
+}
+
+.field.textlink .fieldgroup-field .fieldholder-small {
+    padding: 0;
+}
+
+.field.textlink .fieldgroup-field .fieldholder-small input.text {
+    width: calc(512px - 98px);
+}
