@@ -8,9 +8,10 @@ class TextLinkField extends TextField
     protected $linkField;
     protected $emailEnabled = true;
 
-    protected $localProtocols = [];
+    protected $localProtocols    = [];
+    protected $fallbackProtocols = ['http' => 'http://', 'https' => 'https://', 'mailto' => 'Email'];
 
-    protected static $default_protocols = ['http' => 'http://', 'https' => 'https://', 'mailto' => 'Email'];
+    protected static $default_protocols = [];
 
     /**
      * @param string $name
@@ -55,7 +56,9 @@ class TextLinkField extends TextField
     public function getProtocolList()
     {
         if (!empty($this->localProtocols)) return $this->localProtocols;
-        return self::config()->get('default_protocols');
+        $defaultProtocols = self::config()->get('default_protocols');
+        if (!empty($defaultProtocols)) return self::config()->get('default_protocols');
+        return $this->fallbackProtocols;
     }
 
     /**
