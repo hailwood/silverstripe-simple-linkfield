@@ -8,6 +8,11 @@ class TextLinkField extends TextField
     protected $linkField;
     protected $emailEnabled = true;
 
+    protected $localProtocols    = [];
+    protected $fallbackProtocols = ['http' => 'http://', 'https' => 'https://', 'mailto' => 'Email'];
+
+    protected static $default_protocols = [];
+
     /**
      * @param string $name
      * @param string $title
@@ -22,7 +27,7 @@ class TextLinkField extends TextField
         // naming with underscores to prevent values from actually being saved somewhere
         $this->protocolField = DropdownField::create("{$name}[_Protocol]", false);
         $this->linkField     = TextField::create("{$name}[_Link]", false);
-        $this->protocolField->setSource(['http' => 'http://', 'https' => 'https://', 'mailto' => 'Email']);
+        $this->protocolField->setSource($this->getProtocolList());
 
         $this->children = FieldGroup::create($this->protocolField, $this->linkField);
 
@@ -30,15 +35,52 @@ class TextLinkField extends TextField
         $this->setValue($value);
     }
 
-    public function withoutEmailOption()
+    /**
+     * Set the list of protocols for this instance
+     *
+     * @param array $list
+     * @return $this
+     */
+    public function setProtocolList(array $list = [])
     {
-        $this->protocolField->setSource(['http' => 'http://', 'https' => 'https://']);
+        $this->localProtocols = $list;
+        $this->protocolField->setSource($this->getProtocolList());
         return $this;
     }
 
-    public function includeEmailOption()
+    /**
+     * Get the list of protocols to be used by this instance
+     *
+     * @return array
+     */
+    public function getProtocolList()
     {
-        $this->protocolField->setSource(['http' => 'http://', 'https' => 'https://', 'mailto' => 'Email']);
+        if (!empty($this->localProtocols)) return $this->localProtocols;
+        $defaultProtocols = self::config()->get('default_protocols');
+        if (!empty($defaultProtocols)) return self::config()->get('default_protocols');
+        return $this->fallbackProtocols;
+    }
+
+    /**
+     * Quick function to disable the email option
+     *
+     * @return $this
+     */
+    public function withoutEmailOption()
+    {
+        $this->setProtocolList(array_diff($this->getProtocolList(), ['mailto' => true]));
+        return $this;
+    }
+
+    /**
+     * Quick function to enable the email option or change it's title
+     *
+     * @param string $title
+     * @return $this
+     */
+    public function includeEmailOption($title = 'Email')
+    {
+        $this->setProtocolList(array_merge($this->getProtocolList(), ['mailto' => $title]));
         return $this;
     }
 
@@ -68,8 +110,7 @@ class TextLinkField extends TextField
     }
 
     /**
-     * Value is sometimes an array, and sometimes a single value, so we need
-     * to handle both cases.
+     * Set the field value
      *
      * @param mixed $value
      *
@@ -87,6 +128,12 @@ class TextLinkField extends TextField
         return $this;
     }
 
+    /**
+     * Converts a full url to the protocol and link array
+     *
+     * @param $value
+     * @return array
+     */
     protected function valueToArray($value)
     {
         // wrap it in an array if needed
@@ -99,6 +146,11 @@ class TextLinkField extends TextField
         return $value;
     }
 
+    /**
+     * Error message for an invalid email
+     *
+     * @return string
+     */
     protected function emailErrorMessage()
     {
         return _t(
@@ -108,6 +160,11 @@ class TextLinkField extends TextField
         );
     }
 
+    /**
+     * Error message for an invalid url
+     *
+     * @return string
+     */
     protected function urlErrorMessage()
     {
         return _t(
@@ -141,6 +198,8 @@ class TextLinkField extends TextField
                     $validator->validationError($this->name, $this->emailErrorMessage(), "validation");
                     return false;
                 }
+            default:
+                return true;
         }
 
         return true;
